@@ -2,9 +2,9 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Text Utils API",
-    "summary": "Reverse text, count words and check palindromes.",
-    "description": "Three small text utilities, each one a single `POST` request with a JSON body.",
-    "version": "1.0.0"
+    "summary": "Reverse text, count words, check palindromes and make slugs.",
+    "description": "Four small text utilities, each one a single `POST` request with a JSON body.",
+    "version": "1.1.0"
   },
   "servers": [
     {
@@ -204,6 +204,70 @@
           }
         ]
       }
+    },
+    "/slugify": {
+      "post": {
+        "tags": [
+          "Text"
+        ],
+        "summary": "Make a URL slug",
+        "description": "Turn text into a lowercase, URL-friendly slug.\n\nAccents are removed (`é` becomes `e`), anything that is not a letter or\ndigit is dropped, and words are joined with `separator`.",
+        "operationId": "slugifyText",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SlugifyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SlugifyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST http://localhost:8000/slugify \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"text\": \"Hello, Mintlify Docs!\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import requests\n\nresponse = requests.post(\n    \"http://localhost:8000/slugify\",\n    json={'text': 'Hello, Mintlify Docs!'},\n)\nprint(response.json())"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const response = await fetch(\"http://localhost:8000/slugify\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\" },\n  body: JSON.stringify({\"text\": \"Hello, Mintlify Docs!\"}),\n});\nconsole.log(await response.json());"
+          },
+          {
+            "lang": "go",
+            "label": "Go",
+            "source": "package main\n\nimport (\n\t\"fmt\"\n\t\"io\"\n\t\"net/http\"\n\t\"strings\"\n)\n\nfunc main() {\n\tbody := strings.NewReader(`{\"text\": \"Hello, Mintlify Docs!\"}`)\n\tresp, err := http.Post(\"http://localhost:8000/slugify\", \"application/json\", body)\n\tif err != nil {\n\t\tpanic(err)\n\t}\n\tdefer resp.Body.Close()\n\tout, _ := io.ReadAll(resp.Body)\n\tfmt.Println(string(out))\n}"
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -299,6 +363,77 @@
           "reversed"
         ],
         "title": "ReverseResponse"
+      },
+      "SlugifyRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Text",
+            "description": "The text to work on (up to 10,000 characters).",
+            "examples": [
+              "Hello, Mintlify!"
+            ]
+          },
+          "separator": {
+            "type": "string",
+            "pattern": "^[-_]$",
+            "title": "Separator",
+            "description": "Character placed between words: `-` (default) or `_`.",
+            "default": "-",
+            "examples": [
+              "-"
+            ]
+          },
+          "max_length": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 200.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Length",
+            "description": "Optional maximum slug length. Longer slugs are cut and any trailing separator is removed.",
+            "examples": [
+              50
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "SlugifyRequest"
+      },
+      "SlugifyResponse": {
+        "properties": {
+          "original": {
+            "type": "string",
+            "title": "Original",
+            "description": "The text you sent.",
+            "examples": [
+              "Hello, Mintlify Docs!"
+            ]
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug",
+            "description": "The URL-friendly slug.",
+            "examples": [
+              "hello-mintlify-docs"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "original",
+          "slug"
+        ],
+        "title": "SlugifyResponse"
       },
       "TextRequest": {
         "properties": {
