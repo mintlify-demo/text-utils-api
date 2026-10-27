@@ -83,7 +83,7 @@
           "Text"
         ],
         "summary": "Count words",
-        "description": "Count words, unique words, characters and lines.\n\nWords are runs of letters, digits, apostrophes and hyphens. Comparison\nfor `unique_words` ignores case.",
+        "description": "Count words, unique words, characters and lines, and estimate reading time.\n\nWords are runs of letters, digits, apostrophes and hyphens. Comparison\nfor `unique_words` ignores case.",
         "operationId": "countWords",
         "requestBody": {
           "content": {
@@ -590,6 +590,14 @@
             "examples": [
               1
             ]
+          },
+          "reading_time_minutes": {
+            "type": "integer",
+            "title": "Reading Time Minutes",
+            "description": "Estimated reading time at 200 words per minute, rounded up.",
+            "examples": [
+              1
+            ]
           }
         },
         "type": "object",
@@ -597,7 +605,8 @@
           "words",
           "unique_words",
           "characters",
-          "lines"
+          "lines",
+          "reading_time_minutes"
         ],
         "title": "WordCountResponse"
       },
