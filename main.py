@@ -2,7 +2,7 @@
 
 Five endpoints, all `POST` with a JSON body containing `text`:
   /reverse     -> the text backwards
-  /word-count  -> words, characters, lines, unique words
+  /word-count  -> words, characters, lines, unique words, reading time
   /palindrome  -> is the text a palindrome?
   /slugify     -> a URL-friendly slug
   /word-frequency -> the most common words and how often they appear
@@ -13,6 +13,7 @@ so Mintlify can show ready-to-run examples on every endpoint page.
 Run it:  uvicorn main:app --reload
 """
 import json
+import math
 import re
 from collections import Counter
 import unicodedata
@@ -30,6 +31,9 @@ def reverse_text(text: str) -> str:
     return text[::-1]
 
 
+WORDS_PER_MINUTE = 200
+
+
 def count_words(text: str) -> dict:
     words = re.findall(r"[\w'-]+", text.lower())
     return {
@@ -37,6 +41,8 @@ def count_words(text: str) -> dict:
         "unique_words": len(set(words)),
         "characters": len(text),
         "lines": len(text.splitlines()) if text else 0,
+        # 200 words per minute, rounded up; empty text takes 0 minutes.
+        "reading_time_minutes": math.ceil(len(words) / WORDS_PER_MINUTE),
     }
 
 
@@ -135,6 +141,9 @@ class WordCountResponse(BaseModel):
     unique_words: int = Field(..., description="Number of different words (case-insensitive).", examples=[4])
     characters: int = Field(..., description="Total characters, including spaces and punctuation.", examples=[24])
     lines: int = Field(..., description="Number of lines.", examples=[1])
+    reading_time_minutes: int = Field(
+        ..., description="Estimated reading time at 200 words per minute, rounded up.", examples=[1]
+    )
 
 
 class PalindromeRequest(TextRequest):
@@ -215,7 +224,7 @@ def reverse(body: TextRequest) -> ReverseResponse:
     openapi_extra={"x-codeSamples": code_samples("/word-count", {"text": "to be or not to be"})},
 )
 def word_count(body: TextRequest) -> WordCountResponse:
-    """Count words, unique words, characters and lines.
+    """Count words, unique words, characters and lines, and estimate reading time.
 
     Words are runs of letters, digits, apostrophes and hyphens. Comparison
     for `unique_words` ignores case.
