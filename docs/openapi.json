@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Text Utils API",
-    "summary": "Reverse text, count words, check palindromes and make slugs.",
-    "description": "Four small text utilities, each one a single `POST` request with a JSON body.",
+    "summary": "Reverse text, count and rank words, check palindromes and make slugs.",
+    "description": "Five small text utilities, each one a single `POST` request with a JSON body.",
     "version": "1.1.0"
   },
   "servers": [
@@ -265,6 +265,70 @@
             "lang": "go",
             "label": "Go",
             "source": "package main\n\nimport (\n\t\"fmt\"\n\t\"io\"\n\t\"net/http\"\n\t\"strings\"\n)\n\nfunc main() {\n\tbody := strings.NewReader(`{\"text\": \"Hello, Mintlify Docs!\"}`)\n\tresp, err := http.Post(\"http://localhost:8000/slugify\", \"application/json\", body)\n\tif err != nil {\n\t\tpanic(err)\n\t}\n\tdefer resp.Body.Close()\n\tout, _ := io.ReadAll(resp.Body)\n\tfmt.Println(string(out))\n}"
+          }
+        ]
+      }
+    },
+    "/word-frequency": {
+      "post": {
+        "tags": [
+          "Text"
+        ],
+        "summary": "Rank the most common words",
+        "description": "Return the most common words and how often each appears.\n\nCounting ignores case. Ties keep the order the words first appeared in.",
+        "operationId": "wordFrequency",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WordFrequencyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WordFrequencyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST http://localhost:8000/word-frequency \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"text\": \"to be or not to be\", \"top\": 3}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import requests\n\nresponse = requests.post(\n    \"http://localhost:8000/word-frequency\",\n    json={'text': 'to be or not to be', 'top': 3},\n)\nprint(response.json())"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const response = await fetch(\"http://localhost:8000/word-frequency\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\" },\n  body: JSON.stringify({\"text\": \"to be or not to be\", \"top\": 3}),\n});\nconsole.log(await response.json());"
+          },
+          {
+            "lang": "go",
+            "label": "Go",
+            "source": "package main\n\nimport (\n\t\"fmt\"\n\t\"io\"\n\t\"net/http\"\n\t\"strings\"\n)\n\nfunc main() {\n\tbody := strings.NewReader(`{\"text\": \"to be or not to be\", \"top\": 3}`)\n\tresp, err := http.Post(\"http://localhost:8000/word-frequency\", \"application/json\", body)\n\tif err != nil {\n\t\tpanic(err)\n\t}\n\tdefer resp.Body.Close()\n\tout, _ := io.ReadAll(resp.Body)\n\tfmt.Println(string(out))\n}"
           }
         ]
       }
@@ -536,6 +600,98 @@
           "lines"
         ],
         "title": "WordCountResponse"
+      },
+      "WordFrequency": {
+        "properties": {
+          "word": {
+            "type": "string",
+            "title": "Word",
+            "description": "The word, lower-cased.",
+            "examples": [
+              "be"
+            ]
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "description": "How many times it appears.",
+            "examples": [
+              2
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "word",
+          "count"
+        ],
+        "title": "WordFrequency"
+      },
+      "WordFrequencyRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Text",
+            "description": "The text to work on (up to 10,000 characters).",
+            "examples": [
+              "Hello, Mintlify!"
+            ]
+          },
+          "top": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Top",
+            "description": "How many words to return (1 to 100).",
+            "default": 10,
+            "examples": [
+              3
+            ]
+          },
+          "min_length": {
+            "type": "integer",
+            "maximum": 50.0,
+            "minimum": 1.0,
+            "title": "Min Length",
+            "description": "Ignore words shorter than this, e.g. `4` skips `the` and `and`.",
+            "default": 1,
+            "examples": [
+              1
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "WordFrequencyRequest"
+      },
+      "WordFrequencyResponse": {
+        "properties": {
+          "total_words": {
+            "type": "integer",
+            "title": "Total Words",
+            "description": "Words counted after applying `min_length`.",
+            "examples": [
+              6
+            ]
+          },
+          "words": {
+            "items": {
+              "$ref": "#/components/schemas/WordFrequency"
+            },
+            "type": "array",
+            "title": "Words",
+            "description": "The most common words, most frequent first."
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_words",
+          "words"
+        ],
+        "title": "WordFrequencyResponse"
       }
     }
   },

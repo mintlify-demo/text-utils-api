@@ -56,7 +56,7 @@ def test_palindrome_strict_mode():
 
 def test_spec_has_code_samples_in_four_languages():
     spec = app.openapi()
-    for path in ("/reverse", "/word-count", "/palindrome", "/slugify"):
+    for path in ("/reverse", "/word-count", "/palindrome", "/slugify", "/word-frequency"):
         langs = [s["lang"] for s in spec["paths"][path]["post"]["x-codeSamples"]]
         assert langs == ["bash", "python", "javascript", "go"]
 
@@ -73,6 +73,19 @@ def test_slugify_separator_and_max_length():
 
 def test_slugify_rejects_bad_separator():
     assert client.post("/slugify", json={"text": "x", "separator": "/"}).status_code == 422
+
+
+def test_word_frequency():
+    r = client.post("/word-frequency", json={"text": "To be or not to be", "top": 3})
+    assert r.json() == {
+        "total_words": 6,
+        "words": [{"word": "to", "count": 2}, {"word": "be", "count": 2}, {"word": "or", "count": 1}],
+    }
+
+
+def test_word_frequency_min_length():
+    r = client.post("/word-frequency", json={"text": "the cat and the hat", "min_length": 4})
+    assert r.json() == {"total_words": 0, "words": []}
 
 
 def test_committed_openapi_spec_is_up_to_date():
