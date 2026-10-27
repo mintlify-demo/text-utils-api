@@ -1,0 +1,41 @@
+# Text Utils API
+
+Three small text utilities in [FastAPI](https://fastapi.tiangolo.com/). Part of the [Mintlify demo org](https://github.com/mintlify-demo): `docs/` holds this API's Mintlify docs. The OpenAPI spec includes `x-codeSamples` in cURL, Python, JavaScript and Go.
+
+| Endpoint | What it does |
+| --- | --- |
+| `POST /reverse` | Reverse the text |
+| `POST /word-count` | Count words, unique words, characters and lines |
+| `POST /palindrome` | Check whether the text is a palindrome |
+
+## Run it
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload        # http://localhost:8000  (Swagger UI at /docs)
+```
+
+```bash
+curl -X POST localhost:8000/reverse -H 'Content-Type: application/json' -d '{"text": "Hello"}'
+```
+
+## Test it
+
+```bash
+python -m pytest -q
+```
+
+## Regenerate the OpenAPI spec
+
+`docs/openapi.json` is committed so Mintlify can build the API reference without running the app. After changing `main.py` (including the code samples):
+
+```bash
+python scripts/export_openapi.py    # or: make spec
+```
+
+A test fails if the committed spec is out of date.
+
+## Docs
+
+`docs/` is a complete Mintlify project. The central [`docs`](https://github.com/mintlify-demo/docs) repo publishes it at `/text-utils-api`. Preview just this folder with `cd docs && mint dev`.

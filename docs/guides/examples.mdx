@@ -1,0 +1,58 @@
+---
+title: Examples
+description: Inputs and outputs for every Text Utils endpoint.
+icon: flask
+---
+
+<Tabs>
+  <Tab title="Reverse">
+    ```json Request to /reverse
+    { "text": "stressed" }
+    ```
+
+    ```json Response
+    { "original": "stressed", "reversed": "desserts" }
+    ```
+  </Tab>
+
+  <Tab title="Word count">
+    ```json Request to /word-count
+    { "text": "Hello\nhello world" }
+    ```
+
+    ```json Response
+    { "words": 3, "unique_words": 2, "characters": 17, "lines": 2 }
+    ```
+
+    <Note>
+      `unique_words` ignores case, so `Hello` and `hello` count once.
+    </Note>
+  </Tab>
+
+  <Tab title="Palindrome">
+    ```json Request to /palindrome
+    { "text": "Racecar" }
+    ```
+
+    ```json Response
+    { "is_palindrome": true, "text": "Racecar" }
+    ```
+  </Tab>
+</Tabs>
+
+## Strict palindrome mode
+
+By default `/palindrome` ignores case, spaces and punctuation. Turn that off with `ignore_case_and_punctuation`:
+
+<ParamField body="ignore_case_and_punctuation" type="boolean" default="true">
+  When `false`, `Racecar` is **not** a palindrome (capital R) but `racecar` is.
+</ParamField>
+
+<AccordionGroup>
+  <Accordion title="What counts as a word?">
+    Runs of letters, digits, apostrophes and hyphens. `don't` and `well-known` are one word each.
+  </Accordion>
+  <Accordion title="What's the size limit?">
+    10,000 characters per request. Longer text returns a `422`.
+  </Accordion>
+</AccordionGroup>

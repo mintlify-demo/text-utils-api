@@ -1,0 +1,413 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Text Utils API",
+    "summary": "Reverse text, count words and check palindromes.",
+    "description": "Three small text utilities, each one a single `POST` request with a JSON body.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Local development"
+    }
+  ],
+  "paths": {
+    "/reverse": {
+      "post": {
+        "tags": [
+          "Text"
+        ],
+        "summary": "Reverse text",
+        "description": "Return the text with its characters in reverse order.",
+        "operationId": "reverseText",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TextRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReverseResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST http://localhost:8000/reverse \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"text\": \"Hello, Mintlify!\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import requests\n\nresponse = requests.post(\n    \"http://localhost:8000/reverse\",\n    json={'text': 'Hello, Mintlify!'},\n)\nprint(response.json())"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const response = await fetch(\"http://localhost:8000/reverse\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\" },\n  body: JSON.stringify({\"text\": \"Hello, Mintlify!\"}),\n});\nconsole.log(await response.json());"
+          },
+          {
+            "lang": "go",
+            "label": "Go",
+            "source": "package main\n\nimport (\n\t\"fmt\"\n\t\"io\"\n\t\"net/http\"\n\t\"strings\"\n)\n\nfunc main() {\n\tbody := strings.NewReader(`{\"text\": \"Hello, Mintlify!\"}`)\n\tresp, err := http.Post(\"http://localhost:8000/reverse\", \"application/json\", body)\n\tif err != nil {\n\t\tpanic(err)\n\t}\n\tdefer resp.Body.Close()\n\tout, _ := io.ReadAll(resp.Body)\n\tfmt.Println(string(out))\n}"
+          }
+        ]
+      }
+    },
+    "/word-count": {
+      "post": {
+        "tags": [
+          "Text"
+        ],
+        "summary": "Count words",
+        "description": "Count words, unique words, characters and lines.\n\nWords are runs of letters, digits, apostrophes and hyphens. Comparison\nfor `unique_words` ignores case.",
+        "operationId": "countWords",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TextRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WordCountResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST http://localhost:8000/word-count \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"text\": \"to be or not to be\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import requests\n\nresponse = requests.post(\n    \"http://localhost:8000/word-count\",\n    json={'text': 'to be or not to be'},\n)\nprint(response.json())"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const response = await fetch(\"http://localhost:8000/word-count\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\" },\n  body: JSON.stringify({\"text\": \"to be or not to be\"}),\n});\nconsole.log(await response.json());"
+          },
+          {
+            "lang": "go",
+            "label": "Go",
+            "source": "package main\n\nimport (\n\t\"fmt\"\n\t\"io\"\n\t\"net/http\"\n\t\"strings\"\n)\n\nfunc main() {\n\tbody := strings.NewReader(`{\"text\": \"to be or not to be\"}`)\n\tresp, err := http.Post(\"http://localhost:8000/word-count\", \"application/json\", body)\n\tif err != nil {\n\t\tpanic(err)\n\t}\n\tdefer resp.Body.Close()\n\tout, _ := io.ReadAll(resp.Body)\n\tfmt.Println(string(out))\n}"
+          }
+        ]
+      }
+    },
+    "/palindrome": {
+      "post": {
+        "tags": [
+          "Text"
+        ],
+        "summary": "Check for a palindrome",
+        "description": "Check whether the text reads the same forwards and backwards.",
+        "operationId": "checkPalindrome",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PalindromeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PalindromeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST http://localhost:8000/palindrome \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"text\": \"A man, a plan, a canal: Panama\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import requests\n\nresponse = requests.post(\n    \"http://localhost:8000/palindrome\",\n    json={'text': 'A man, a plan, a canal: Panama'},\n)\nprint(response.json())"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const response = await fetch(\"http://localhost:8000/palindrome\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\" },\n  body: JSON.stringify({\"text\": \"A man, a plan, a canal: Panama\"}),\n});\nconsole.log(await response.json());"
+          },
+          {
+            "lang": "go",
+            "label": "Go",
+            "source": "package main\n\nimport (\n\t\"fmt\"\n\t\"io\"\n\t\"net/http\"\n\t\"strings\"\n)\n\nfunc main() {\n\tbody := strings.NewReader(`{\"text\": \"A man, a plan, a canal: Panama\"}`)\n\tresp, err := http.Post(\"http://localhost:8000/palindrome\", \"application/json\", body)\n\tif err != nil {\n\t\tpanic(err)\n\t}\n\tdefer resp.Body.Close()\n\tout, _ := io.ReadAll(resp.Body)\n\tfmt.Println(string(out))\n}"
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "PalindromeRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Text",
+            "description": "The text to work on (up to 10,000 characters).",
+            "examples": [
+              "Hello, Mintlify!"
+            ]
+          },
+          "ignore_case_and_punctuation": {
+            "type": "boolean",
+            "title": "Ignore Case And Punctuation",
+            "description": "When `true`, case, spaces and punctuation are ignored, so `A man, a plan, a canal: Panama` counts.",
+            "default": true,
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "PalindromeRequest"
+      },
+      "PalindromeResponse": {
+        "properties": {
+          "is_palindrome": {
+            "type": "boolean",
+            "title": "Is Palindrome",
+            "description": "Whether the text reads the same forwards and backwards.",
+            "examples": [
+              true
+            ]
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "The text you sent.",
+            "examples": [
+              "Racecar"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "is_palindrome",
+          "text"
+        ],
+        "title": "PalindromeResponse"
+      },
+      "ReverseResponse": {
+        "properties": {
+          "original": {
+            "type": "string",
+            "title": "Original",
+            "description": "The text you sent.",
+            "examples": [
+              "Hello, Mintlify!"
+            ]
+          },
+          "reversed": {
+            "type": "string",
+            "title": "Reversed",
+            "description": "The text, backwards.",
+            "examples": [
+              "!yfitniM ,olleH"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "original",
+          "reversed"
+        ],
+        "title": "ReverseResponse"
+      },
+      "TextRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Text",
+            "description": "The text to work on (up to 10,000 characters).",
+            "examples": [
+              "Hello, Mintlify!"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "TextRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WordCountResponse": {
+        "properties": {
+          "words": {
+            "type": "integer",
+            "title": "Words",
+            "description": "Total number of words.",
+            "examples": [
+              5
+            ]
+          },
+          "unique_words": {
+            "type": "integer",
+            "title": "Unique Words",
+            "description": "Number of different words (case-insensitive).",
+            "examples": [
+              4
+            ]
+          },
+          "characters": {
+            "type": "integer",
+            "title": "Characters",
+            "description": "Total characters, including spaces and punctuation.",
+            "examples": [
+              24
+            ]
+          },
+          "lines": {
+            "type": "integer",
+            "title": "Lines",
+            "description": "Number of lines.",
+            "examples": [
+              1
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "words",
+          "unique_words",
+          "characters",
+          "lines"
+        ],
+        "title": "WordCountResponse"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Text",
+      "description": "Small text utilities."
+    }
+  ]
+}
