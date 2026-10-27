@@ -1,10 +1,11 @@
 """Text Utils API: reverse text, count words, check palindromes, make slugs.
 
-Four endpoints, all `POST` with a JSON body containing `text`:
+Five endpoints, all `POST` with a JSON body containing `text`:
   /reverse     -> the text backwards
   /word-count  -> words, characters, lines, unique words
   /palindrome  -> is the text a palindrome?
   /slugify     -> a URL-friendly slug
+  /word-frequency -> the most common words and how often they appear
 
 The OpenAPI spec also includes `x-codeSamples` (cURL, Python, JavaScript, Go)
 so Mintlify can show ready-to-run examples on every endpoint page.
@@ -13,6 +14,7 @@ Run it:  uvicorn main:app --reload
 """
 import json
 import re
+from collections import Counter
 import unicodedata
 
 from fastapi import FastAPI
@@ -48,6 +50,13 @@ def is_palindrome(text: str, ignore_case_and_punctuation: bool = True) -> bool:
 # --------------------------------------------------------------------------- #
 # Code samples for the docs (shown next to each endpoint)
 # --------------------------------------------------------------------------- #
+
+
+def word_frequency(text: str, top: int = 10, min_length: int = 1) -> list[tuple[str, int]]:
+    """Return the `top` most common words (case-insensitive), most frequent first."""
+    words = [w for w in re.findall(r"[\w'-]+", text.lower()) if len(w) >= min_length]
+    # most_common breaks ties by first appearance, which keeps results stable.
+    return Counter(words).most_common(top)
 
 
 def slugify(text: str, separator: str = "-", max_length: int | None = None) -> str:
@@ -141,6 +150,21 @@ class PalindromeResponse(BaseModel):
     text: str = Field(..., description="The text you sent.", examples=["Racecar"])
 
 
+class WordFrequencyRequest(TextRequest):
+    top: int = Field(10, ge=1, le=100, description="How many words to return (1 to 100).", examples=[3])
+    min_length: int = Field(1, ge=1, le=50, description="Ignore words shorter than this, e.g. `4` skips `the` and `and`.", examples=[1])
+
+
+class WordFrequency(BaseModel):
+    word: str = Field(..., description="The word, lower-cased.", examples=["be"])
+    count: int = Field(..., description="How many times it appears.", examples=[2])
+
+
+class WordFrequencyResponse(BaseModel):
+    total_words: int = Field(..., description="Words counted after applying `min_length`.", examples=[6])
+    words: list[WordFrequency] = Field(..., description="The most common words, most frequent first.")
+
+
 class SlugifyRequest(TextRequest):
     separator: str = Field("-", description="Character placed between words: `-` (default) or `_`.", pattern="^[-_]$", examples=["-"])
     max_length: int | None = Field(None, ge=1, le=200, description="Optional maximum slug length. Longer slugs are cut and any trailing separator is removed.", examples=[50])
@@ -158,8 +182,8 @@ class SlugifyResponse(BaseModel):
 app = FastAPI(
     title="Text Utils API",
     version="1.1.0",
-    summary="Reverse text, count words, check palindromes and make slugs.",
-    description="Four small text utilities, each one a single `POST` request with a JSON body.",
+    summary="Reverse text, count and rank words, check palindromes and make slugs.",
+    description="Five small text utilities, each one a single `POST` request with a JSON body.",
     servers=[{"url": "http://localhost:8000", "description": "Local development"}],
     openapi_tags=[{"name": "Text", "description": "Small text utilities."}],
 )
@@ -230,3 +254,23 @@ def slugify_text(body: SlugifyRequest) -> SlugifyResponse:
     digit is dropped, and words are joined with `separator`.
     """
     return SlugifyResponse(original=body.text, slug=slugify(body.text, body.separator, body.max_length))
+
+
+@app.post(
+    "/word-frequency",
+    tags=["Text"],
+    operation_id="wordFrequency",
+    summary="Rank the most common words",
+    response_model=WordFrequencyResponse,
+    openapi_extra={"x-codeSamples": code_samples("/word-frequency", {"text": "to be or not to be", "top": 3})},
+)
+def word_frequency_endpoint(body: WordFrequencyRequest) -> WordFrequencyResponse:
+    """Return the most common words and how often each appears.
+
+    Counting ignores case. Ties keep the order the words first appeared in.
+    """
+    ranked = word_frequency(body.text, body.top, body.min_length)
+    total = len([w for w in re.findall(r"[\w'-]+", body.text.lower()) if len(w) >= body.min_length])
+    return WordFrequencyResponse(
+        total_words=total, words=[WordFrequency(word=w, count=c) for w, c in ranked]
+    )
