@@ -12,25 +12,17 @@
       {
         "group": "Get started",
         "icon": "rocket",
-        "pages": [
-          "index",
-          "quickstart"
-        ]
+        "pages": ["index", "quickstart"]
       },
       {
         "group": "Guides",
         "icon": "book-open",
-        "pages": [
-          "guides/examples"
-        ]
+        "pages": ["guides/examples"]
       },
       {
         "group": "API reference",
         "icon": "code",
-        "openapi": {
-          "source": "openapi.json",
-          "directory": "text-utils-api/api-reference"
-        }
+        "openapi": "openapi.json"
       }
     ]
   }
