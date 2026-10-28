@@ -1,0 +1,42 @@
+---
+title: Batch processing for partners
+description: Process many documents with the Text Utils API from a partner integration.
+icon: handshake
+groups: ["partner", "enterprise"]
+---
+
+<Note>
+  This page is for readers in the **partner** or **enterprise** group. Other signed-in readers get a 404.
+</Note>
+
+{user.name ? <>Welcome, {user.name}.</> : null} The Text Utils API takes one text per request. To process a batch, send requests in parallel and keep each text under 100,000 characters.
+
+<CodeGroup>
+```python Python
+import asyncio, httpx
+
+TEXTS = ["Hello, Mintlify!", "A man, a plan, a canal: Panama", "Docs that write themselves"]
+
+async def main():
+    async with httpx.AsyncClient(base_url="http://localhost:8000") as client:
+        results = await asyncio.gather(*(client.post("/word-count", json={"text": t}) for t in TEXTS))
+        for text, r in zip(TEXTS, results):
+            print(text, r.json()["words"])
+
+asyncio.run(main())
+```
+
+```javascript JavaScript
+const texts = ["Hello, Mintlify!", "A man, a plan, a canal: Panama"];
+const results = await Promise.all(
+  texts.map((text) =>
+    fetch("http://localhost:8000/word-count", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    }).then((r) => r.json()),
+  ),
+);
+```
+</CodeGroup>
+

@@ -39,3 +39,17 @@ A test fails if the committed spec is out of date.
 ## Docs
 
 `docs/` is a complete Mintlify project. The central [`docs`](https://github.com/mintlify-demo/docs) repo publishes it at `/text-utils-api`. Preview just this folder with `cd docs && mint dev`.
+
+## Hosting
+
+TODO(hosting): the API will be hosted with Mintlify's internal tooling (details TBD). Until then the OpenAPI `servers` list only `http://localhost:8000`. When the hosted URL exists, add it as the first entry of `servers=[...]` in `main.py`, run `make spec`, and rebase the demo stack (see the demo kit README).
+
+`docs/guides/partner-batch-processing.mdx` is gated to the `partner` and `enterprise` groups with `groups` frontmatter.
+
+## Ticket → file map
+
+Context for Mintlify's *Update docs from tickets* automation (seed tickets: `linear-tickets.json` in the demo kit).
+
+| Ticket | What | Where |
+| --- | --- | --- |
+| DEMO-6 | Stop-word filtering for `/word-count` (`ignore_stop_words`) | `main.py` (`count_words`, `TextRequest`, `WordCountResponse`), `docs/guides/examples.mdx` |
