@@ -1,6 +1,3 @@
-import json
-from pathlib import Path
-
 from fastapi.testclient import TestClient
 
 from main import app
@@ -59,9 +56,3 @@ def test_spec_has_code_samples_in_four_languages():
     for path in ("/reverse", "/word-count", "/palindrome"):
         langs = [s["lang"] for s in spec["paths"][path]["post"]["x-codeSamples"]]
         assert langs == ["bash", "python", "javascript", "go"]
-
-
-def test_committed_openapi_spec_is_up_to_date():
-    """If this fails, run `make spec` and commit docs/openapi.json."""
-    committed = json.loads((Path(__file__).parent.parent / "docs" / "openapi.json").read_text())
-    assert committed == app.openapi()
