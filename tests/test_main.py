@@ -21,7 +21,7 @@ def test_reverse_requires_text():
 
 def test_word_count():
     r = client.post("/word-count", json={"text": "to be or not to be"})
-    assert r.json() == {"words": 6, "unique_words": 4, "characters": 18, "lines": 1}
+    assert r.json() == {"words": 6, "unique_words": 4, "characters": 18, "lines": 1, "reading_time_minutes": 1}
 
 
 def test_word_count_is_case_insensitive_and_counts_lines():
@@ -32,7 +32,7 @@ def test_word_count_is_case_insensitive_and_counts_lines():
 
 def test_word_count_empty():
     r = client.post("/word-count", json={"text": ""})
-    assert r.json() == {"words": 0, "unique_words": 0, "characters": 0, "lines": 0}
+    assert r.json() == {"words": 0, "unique_words": 0, "characters": 0, "lines": 0, "reading_time_minutes": 0}
 
 
 def test_palindrome_true_ignoring_punctuation():
@@ -83,3 +83,8 @@ def test_word_frequency():
 def test_word_frequency_min_length():
     r = client.post("/word-frequency", json={"text": "the cat and the hat", "min_length": 4})
     assert r.json() == {"total_words": 0, "words": []}
+
+
+def test_reading_time_rounds_up():
+    r = client.post("/word-count", json={"text": "word " * 401})
+    assert r.json()["reading_time_minutes"] == 3
