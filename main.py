@@ -1,9 +1,10 @@
-"""Text Utils API: reverse text, count words, check palindromes.
+"""Text Utils API: reverse text, count words, check palindromes, make slugs.
 
-Three endpoints, all `POST` with a JSON body containing `text`:
+Four endpoints, all `POST` with a JSON body containing `text`:
   /reverse     -> the text backwards
   /word-count  -> words, characters, lines, unique words
   /palindrome  -> is the text a palindrome?
+  /slugify     -> a URL-friendly slug
 
 The OpenAPI spec also includes `x-codeSamples` (cURL, Python, JavaScript, Go)
 so Mintlify can show ready-to-run examples on every endpoint page.
@@ -12,6 +13,7 @@ Run it:  uvicorn main:app --reload
 """
 import json
 import re
+import unicodedata
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -46,6 +48,17 @@ def is_palindrome(text: str, ignore_case_and_punctuation: bool = True) -> bool:
 # --------------------------------------------------------------------------- #
 # Code samples for the docs (shown next to each endpoint)
 # --------------------------------------------------------------------------- #
+
+
+def slugify(text: str, separator: str = "-", max_length: int | None = None) -> str:
+    """Turn text into a lowercase, URL-friendly slug: "Héllo, World!" -> "hello-world"."""
+    # Strip accents (é -> e), then keep only letters, digits and spaces.
+    ascii_text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+    words = re.findall(r"[a-z0-9]+", ascii_text.lower())
+    slug = separator.join(words)
+    if max_length is not None and len(slug) > max_length:
+        slug = slug[:max_length].rstrip(separator)
+    return slug
 
 
 def code_samples(path: str, body: dict) -> list[dict]:
@@ -128,15 +141,25 @@ class PalindromeResponse(BaseModel):
     text: str = Field(..., description="The text you sent.", examples=["Racecar"])
 
 
+class SlugifyRequest(TextRequest):
+    separator: str = Field("-", description="Character placed between words: `-` (default) or `_`.", pattern="^[-_]$", examples=["-"])
+    max_length: int | None = Field(None, ge=1, le=200, description="Optional maximum slug length. Longer slugs are cut and any trailing separator is removed.", examples=[50])
+
+
+class SlugifyResponse(BaseModel):
+    original: str = Field(..., description="The text you sent.", examples=["Hello, Mintlify Docs!"])
+    slug: str = Field(..., description="The URL-friendly slug.", examples=["hello-mintlify-docs"])
+
+
 # --------------------------------------------------------------------------- #
 # The app
 # --------------------------------------------------------------------------- #
 
 app = FastAPI(
     title="Text Utils API",
-    version="1.0.0",
-    summary="Reverse text, count words and check palindromes.",
-    description="Three small text utilities, each one a single `POST` request with a JSON body.",
+    version="1.1.0",
+    summary="Reverse text, count words, check palindromes and make slugs.",
+    description="Four small text utilities, each one a single `POST` request with a JSON body.",
     servers=[{"url": "http://localhost:8000", "description": "Local development"}],
     openapi_tags=[{"name": "Text", "description": "Small text utilities."}],
 )
@@ -190,3 +213,20 @@ def palindrome(body: PalindromeRequest) -> PalindromeResponse:
         is_palindrome=is_palindrome(body.text, body.ignore_case_and_punctuation),
         text=body.text,
     )
+
+
+@app.post(
+    "/slugify",
+    tags=["Text"],
+    operation_id="slugifyText",
+    summary="Make a URL slug",
+    response_model=SlugifyResponse,
+    openapi_extra={"x-codeSamples": code_samples("/slugify", {"text": "Hello, Mintlify Docs!"})},
+)
+def slugify_text(body: SlugifyRequest) -> SlugifyResponse:
+    """Turn text into a lowercase, URL-friendly slug.
+
+    Accents are removed (`é` becomes `e`), anything that is not a letter or
+    digit is dropped, and words are joined with `separator`.
+    """
+    return SlugifyResponse(original=body.text, slug=slugify(body.text, body.separator, body.max_length))
